@@ -2,16 +2,15 @@
 
 """Pibooth plugin to upload pictures on Dropbox."""
 
-import contextlib
 import datetime
 import os.path
 import time
 import dropbox
 
 import pibooth
-from pibooth.utils import LOGGER
+from pibooth.utils import LOGGER, timeit
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 SECTION = 'DROPBOX'
@@ -75,6 +74,20 @@ def state_processing_exit(app, cfg):
             app.previous_picture_url = None
 
 
+def get_config_options(app, cfg):
+    """ Read options at each hook. Options can change at runtime """
+
+    app.dropbox_album_name = cfg.get(SECTION, 'album_name')
+    app.dropbox_token = cfg.get(SECTION, 'token')
+    app.dropbox_app_key = cfg.get(SECTION, 'app_key')
+    app.dropbox_app_secret = cfg.get(SECTION, 'app_secret')
+
+    LOGGER.debug("Dropbox album_name -> %s", app.dropbox_album_name)
+    LOGGER.debug("Dropbox token -> %s", app.dropbox_token)
+    LOGGER.debug("Dropbox app_key -> %s", app.dropbox_app_key)
+    LOGGER.debug("Dropbox app_secret -> %s", app.dropbox_app_secret)
+
+
 class dropboxApi(object):
 
     def upload(self, dbx, fullname, folder, name, overwrite=False):
@@ -98,7 +111,7 @@ class dropboxApi(object):
         with open(fullname, 'rb') as fd:
             data = fd.read()
 
-        with stopwatch('upload %d bytes' % len(data)):
+        with timeit('Upload %d bytes' % len(data)):
             try:
                 res = dbx.files_upload(
                     data, path, mode,
@@ -112,32 +125,9 @@ class dropboxApi(object):
         return res
 
     def get_temp_link(self, dbx, path):
-        """ Get the temporary link for the picture. Link is valid 4 hours only. """
+        """
+        Get the temporary link for the picture. Link is valid 4 hours only.
+        """
         res = dbx.files_get_temporary_link(path)
         LOGGER.debug('dropbox temp picture path -> %s', res.link)
         return res.link
-
-
-def get_config_options(app, cfg):
-    """ Read options at each hook. Options can change at runtime """
-
-    app.dropbox_album_name = cfg.get(SECTION, 'album_name')
-    app.dropbox_token = cfg.get(SECTION, 'token')
-    app.dropbox_app_key = cfg.get(SECTION, 'app_key')
-    app.dropbox_app_secret = cfg.get(SECTION, 'app_secret')
-
-    LOGGER.debug("Dropbox album_name -> %s", app.dropbox_album_name)
-    LOGGER.debug("Dropbox token -> %s", app.dropbox_token)
-    LOGGER.debug("Dropbox app_key -> %s", app.dropbox_app_key)
-    LOGGER.debug("Dropbox app_secret -> %s", app.dropbox_app_secret)
-
-
-@contextlib.contextmanager
-def stopwatch(message):
-    """Context manager to print how long a block of code took."""
-    t0 = time.time()
-    try:
-        yield
-    finally:
-        t1 = time.time()
-        LOGGER.debug('Total elapsed time for %s: %.3f', message, t1 - t0)
