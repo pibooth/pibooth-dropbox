@@ -27,11 +27,17 @@ Here below the new configuration options available in the `pibooth`_ configurati
 
     [DROPBOX]
 
-    # Album where pictures are uploaded
+    # Dropbox folder where pictures are uploaded. Subfolders can be separated by /
     album_name = Pibooth
 
-    # Credentials file downloaded from Google API
-    client_id_file =
+    # Refresh-Token for the dropbox api
+    token =
+
+    # Dropbox Application Key
+    app_key =
+
+    # Dropbox Application Password
+    app_secret =
 
 .. note:: Edit the configuration by running the command ``pibooth --config``.
 
@@ -65,10 +71,10 @@ https://stackoverflow.com/questions/70641660/how-do-you-get-and-use-a-refresh-to
    :target: https://www.python.org/downloads
    :alt: Python 3.6+
 
-.. |PypiPackage| image:: https://badge.fury.io/py/pibooth-google-photo.svg
-   :target: https://pypi.org/project/pibooth-google-photo
+.. |PypiPackage| image:: https://badge.fury.io/py/pibooth-dropbox.svg
+   :target: https://pypi.org/project/pibooth-dropbox
    :alt: PyPi package
 
-.. |Downloads| image:: https://img.shields.io/pypi/dm/pibooth-google-photo?color=purple
-   :target: https://pypi.org/project/pibooth-google-photo
+.. |Downloads| image:: https://img.shields.io/pypi/dm/pibooth-dropbox?color=purple
+   :target: https://pypi.org/project/pibooth-dropbox
    :alt: PyPi downloads
