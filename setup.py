@@ -33,7 +33,7 @@ def main():
             'Natural Language :: English',
             'Topic :: Multimedia :: Graphics :: Capture :: Digital Camera',
         ],
-        author="Sébastien Ravel, Vincent Verdeil, Antoine Rousseaux",
+        author="Martin Mhilcher",
         url="https://github.com/pibooth/pibooth-dropbox",
         download_url="https://github.com/pibooth/pibooth-dropbox/archive/{}.tar.gz".format(plugin.__version__),
         license='GPLv3',
@@ -43,14 +43,14 @@ def main():
             'camera',
             'photobooth'
         ],
-        py_modules=['pibooth_dropbox'],
+        packages=['pibooth_dropbox'],
         python_requires=">=3.6",
         install_requires=[
             'pibooth>=2.0.0',
             'dropbox>=11.29.0'
         ],
         zip_safe=False,  # Don't install the lib as an .egg zipfile
-        entry_points={'pibooth': ["pibooth_dropbox = pibooth_dropbox"]},
+        entry_points={'pibooth': ["pibooth_dropbox = pibooth_dropbox.plugin"]},
     )
 
 
