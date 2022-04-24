@@ -33,7 +33,7 @@ def pibooth_startup(app, cfg):
     app.previous_picture_url = None
 
     if not cfg.get(SECTION, 'app_key') or not cfg.get(SECTION, 'app_secret'):
-        LOGGER.debug("No credentials defined in [DROPBOX][token], upload deactivated")
+        LOGGER.debug("No credentials defined in [%s][token], upload deactivated", SECTION)
     else:
         LOGGER.info("Initialize Dropbox connection")
         app.dropbox = DropboxApi(cfg.get(SECTION, 'app_key'),
@@ -165,8 +165,7 @@ class DropboxApi(object):
         return res
 
     def get_temp_url(self, path):
-        """
-        Get the temporary URL for the picture (valid 4 hours only).
+        """Get the temporary URL for the picture (valid 4 hours only).
         """
         try:
             res = self._session.files_get_temporary_link(path)
