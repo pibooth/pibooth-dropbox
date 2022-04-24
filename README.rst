@@ -55,15 +55,15 @@ by an other application than the one defined in Dropbox.com.
 
 ===========  ==================================================================
  |step1|     `Go to Dropbox App Console <https://www.dropbox.com/developers/apps>`_
-             and click on ``the Create app button``.
+             and click on the **Create app** button.
 
- |step2|     Under Choose an API section, select Scoped Access.
-             Under Choose the type of access you need, select Full Dropbox.
-             Enter a application name (for instance **My Awsome Photo Booth**).
+ |step2|     Under **Choose an API** section, select Scoped Access.
+             Under **Choose the type of access** you need, select Full Dropbox.
+             Enter an application name (for instance **My Awsome Photo Booth**).
 
- |step3|     Click the Create app button. You will be redirected to the console
-             for your app. Note the presence of your App key and App secret on
-             this page (not pictured). You will need to enter these into **pibooth**
+ |step3|     Click the **Create app** button. You will be redirected to the
+             console for your app. Note the presence of your App key and App secret
+             on this page. You will need to enter these into **pibooth**
              configuration file once you have followed the remaining steps.
 
  |step4|     Add the OAuth Redirect URI ``http://localhost:35880/`` to your
@@ -107,14 +107,14 @@ by an other application than the one defined in Dropbox.com.
    :width: 80 %
    :alt: step2_project_name
 
-.. |step3| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step3_display_name.png?raw=true
+.. |step3| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step3_app_key.png?raw=true
    :width: 80 %
-   :alt: step3_display_name
+   :alt: step3_app_key
 
-.. |step4| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step4_app_type.png?raw=true
+.. |step4| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step4_redirect_uri.png?raw=true
    :width: 80 %
-   :alt: step4_app_type
+   :alt: step4_redirect_uri
 
-.. |step5| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step5_download.png?raw=true
+.. |step5| image:: https://github.com/pibooth/pibooth-dropbox/blob/master/docs/images/step5_permissions.png?raw=true
    :width: 80 %
-   :alt: step5_download
+   :alt: step5_permissions
