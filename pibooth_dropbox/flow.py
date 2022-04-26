@@ -88,10 +88,11 @@ class InstalledAppFlow(object):
         "The authentication flow has completed. You may close this window."
     )
 
-    def __init__(self, app_key, app_secret, client_type='offline'):
+    def __init__(self, app_key, app_secret, scopes=None, client_type='offline'):
         self.app_key = app_key
         self.app_secret = app_secret
         self.client_type = client_type
+        self.scopes = scopes
         self.redirect_uri = None
 
     def fetch_token(self, uri, state=None):

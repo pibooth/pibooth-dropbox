@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import datetime
-import os.path
+import os
 import time
+import os.path
+import datetime
 
 import requests
 import dropbox
@@ -13,6 +14,7 @@ from pibooth_dropbox.flow import InstalledAppFlow, Credentials
 
 
 SECTION = 'DROPBOX'
+CACHE_FILE = '.dropbox_token.json'
 
 
 @pibooth.hookimpl
@@ -28,6 +30,14 @@ def pibooth_configure(cfg):
 
 
 @pibooth.hookimpl
+def pibooth_reset(cfg, hard):
+    """Remove cached token file."""
+    if hard and os.path.isfile(cfg.join_path(CACHE_FILE)):
+        LOGGER.info("Remove Dropbox autorizations '%s'", cfg.join_path(CACHE_FILE))
+        os.remove(cfg.join_path(CACHE_FILE))
+
+
+@pibooth.hookimpl
 def pibooth_startup(app, cfg):
     """Create the Dropbox upload instance."""
     app.previous_picture_url = None
@@ -38,7 +48,7 @@ def pibooth_startup(app, cfg):
         LOGGER.info("Initialize Dropbox connection")
         app.dropbox = DropboxApi(cfg.get(SECTION, 'app_key'),
                                  cfg.get(SECTION, 'app_secret'),
-                                 cfg.join_path(".dropbox_token.json"))
+                                 cfg.join_path(CACHE_FILE))
 
 
 @pibooth.hookimpl
@@ -72,6 +82,11 @@ class DropboxApi(object):
     :type token_file: str
     """
 
+    SCOPES = ["account_info.read",
+              "files.content.read",
+              "files.content.write",
+              "files.metadata.read"]
+
     def __init__(self, app_key, app_secret, token_file="token.json"):
         self.app_key = app_key
         self.app_secret = app_secret
@@ -83,7 +98,7 @@ class DropboxApi(object):
 
     def _auth(self):
         """Open browser to create credentials."""
-        flow = InstalledAppFlow(self.app_key, self.app_secret)
+        flow = InstalledAppFlow(self.app_key, self.app_secret, self.SCOPES)
         return flow.run_local_server(port=35880)
 
     def _save_credentials(self, credentials):
