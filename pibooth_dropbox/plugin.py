@@ -103,24 +103,35 @@ class DropboxApi(object):
 
     def _save_credentials(self, credentials):
         """Save credentials in a file to use API without need to allow acces."""
-        with open(self.token_cache_file, 'w') as fp:
-            fp.write(credentials.to_json())
+        try:
+            with open(self.token_cache_file, 'w') as fp:
+                fp.write(credentials.to_json())
+        except OSError as err:
+            LOGGER.warning("Can not save Dropbox token in file '%s': %s",
+                           self.token_cache_file, err)
 
     def _get_authorized_session(self):
         """Create credentials file if required and open a new session."""
         credentials = None
         if not os.path.exists(self.token_cache_file) or \
                 os.path.getsize(self.token_cache_file) == 0:
-            credentials = self._auth()
-            LOGGER.debug("First use of pibooth-dropbox: store token in file %s",
+            LOGGER.debug("First use of plugin, store token in file %s",
                          self.token_cache_file)
-            try:
-                self._save_credentials(credentials)
-            except OSError as err:
-                LOGGER.warning("Can not save Dropbox token in file '%s': %s",
-                               self.token_cache_file, err)
+            credentials = self._auth()
+            self._save_credentials(credentials)
         else:
             credentials = Credentials.from_authorized_user_file(self.token_cache_file)
+            if credentials.client_id != self.app_key or\
+                    credentials.client_secret != self.app_secret:
+                LOGGER.debug("Application key or secret has changed, store new token in file '%s'",
+                             self.token_cache_file)
+                credentials = self._auth()
+                self._save_credentials(credentials)
+
+        # Remove cache if access rights are not correct
+        if set(self.SCOPES).intersection(set(credentials.scopes)) != set(self.SCOPES):
+            LOGGER.warning("Invalid permission, please set write access in Dropbox.com and restart pibooth")
+            os.remove(self.token_cache_file)
 
         if credentials:
             return dropbox.Dropbox(app_key=self.app_key,
@@ -172,8 +183,9 @@ class DropboxApi(object):
                     data, path, mode,
                     client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
                     mute=True)
-            except dropbox.exceptions.ApiError:
-                LOGGER.error('*** Dropbox API error', exc_info=True)
+            except Exception as ex:
+                LOGGER.error('Dropbox API error: %s', ex)
+                LOGGER.debug(str(ex), exc_info=True)
                 return None
 
         LOGGER.debug('Uploaded as %s', res.name.encode('utf8'))
@@ -186,6 +198,7 @@ class DropboxApi(object):
             res = self._session.files_get_temporary_link(path)
             LOGGER.debug('Temporary picture URL -> %s', res.link)
             return res.link
-        except:
-            LOGGER.error("Can not get temporary URL for Dropbox", exc_info=True)
+        except Exception as ex:
+            LOGGER.error('Can not get temporary URL for Dropbox: %s', ex)
+            LOGGER.debug(str(ex), exc_info=True)
             return None

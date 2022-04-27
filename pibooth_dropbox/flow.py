@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 
 import json
 try:
@@ -15,32 +15,33 @@ from dropbox import DropboxOAuth2Flow
 
 class Credentials(object):
 
-    _PROPERTIES = ("token",
-                   "refresh_token",
-                   "token_uri",
-                   "account_id",
-                   "client_id",
-                   "scopes")
+    PROPERTIES = ("token",
+                  "refresh_token",
+                  "token_uri",
+                  "account_id",
+                  "client_id",
+                  "client_secret",
+                  "scopes")
 
-    def __init__(self, token, refresh_token, token_uri, account_id,
-                 client_id, scopes, expires_at=None):
+    def __init__(self, client_id=None, client_secret=None, token=None,
+                 refresh_token=None, token_uri=None, account_id=None,
+                 scopes=None, expires_at=None):
         self.token = token
         self.refresh_token = refresh_token
         self.token_uri = token_uri
         self.account_id = account_id
         self.client_id = client_id
-        if isinstance(scopes, (list, tuple)):
-            self.scopes = ' '.join(scopes)
-        else:
-            self.scopes = scopes
+        self.client_secret = client_secret
+        self.scopes = scopes
         self.expires_at = expires_at
 
     @classmethod
-    def from_oauth2_flow_result(cls, result):
+    def from_oauth2_flow_result(cls, result, client_id, client_secret):
         """Return a :py:class:`Credentials` instance from OAuth2 flow result.
         """
-        return cls(result.access_token, result.refresh_token, result.url_state,
-                   result.account_id, result.user_id, result.scope, result.expires_at)
+        return cls(client_id, client_secret, result.access_token, result.refresh_token,
+                   result.url_state, result.account_id, result.scope.split(' '),
+                   result.expires_at)
 
     @classmethod
     def from_authorized_user_file(cls, filename):
@@ -58,14 +59,11 @@ class Credentials(object):
 
         :returns: A JSON representation of this instance, suitable to write in file.
         """
-        prep = dict((k, getattr(self, k)) for k in Credentials._PROPERTIES)
+        prep = dict((k, getattr(self, k)) for k in Credentials.PROPERTIES)
 
         # Remove entries that explicitely need to be removed
         if strip is not None:
             prep = {k: v for k, v in prep.items() if k not in strip}
-
-        # Save scopes has list
-        prep["scopes"] = prep["scopes"].split(' ')
 
         return json.dumps(prep)
 
@@ -88,9 +86,9 @@ class InstalledAppFlow(object):
         "The authentication flow has completed. You may close this window."
     )
 
-    def __init__(self, app_key, app_secret, scopes=None, client_type='offline'):
-        self.app_key = app_key
-        self.app_secret = app_secret
+    def __init__(self, app_key, app_secret, scopes, client_type='offline'):
+        self.client_id = app_key
+        self.client_secret = app_secret
         self.client_type = client_type
         self.scopes = scopes
         self.redirect_uri = None
@@ -180,12 +178,13 @@ class InstalledAppFlow(object):
               self.redirect_uri)
 
         session = {}
-        flow = DropboxOAuth2Flow(self.app_key,
+        flow = DropboxOAuth2Flow(self.client_id,
                                  self.redirect_uri,
                                  session,
                                  "dropbox-auth-csrf-token",
-                                 self.app_secret,
-                                 token_access_type=self.client_type)
+                                 self.client_secret,
+                                 token_access_type=self.client_type,
+                                 scope=self.scopes)
         auth_url = flow.start()
 
         if open_browser:
@@ -203,7 +202,7 @@ class InstalledAppFlow(object):
         # This closes the socket
         local_server.server_close()
 
-        return Credentials.from_oauth2_flow_result(result)
+        return Credentials.from_oauth2_flow_result(result, self.client_id, self.client_secret)
 
 
 class _WSGIRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
